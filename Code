@@ -1,0 +1,158 @@
+from microbit import *
+import random
+
+score = 0
+lives = 3
+
+# Main game loop that controls your lives/rounds
+while lives > 0:
+    # Player starting position
+    car_x = 2
+    car_y = 4
+    
+    # Enemy positions
+    enemy1_x = random.randint(0, 4)
+    enemy1_y = random.randint(-4, 0)
+    
+    enemy2_x = random.randint(0, 4)
+    enemy2_y = random.randint(-9, -5)
+    
+    enemy3_x = random.randint(0, 4)
+    enemy3_y = random.randint(-14, -10)
+    
+    enemy4_x = random.randint(0, 4)
+    enemy4_y = random.randint(-19, -15)
+    
+    frame_count = 0
+    steering_timer = 0
+    drop_threshold = 15  # Base falling speed (resets when hit)
+    round_active = True
+
+    # Active gameplay loop for the current round
+    while round_active:
+        frame_count += 1
+        steering_timer += 1
+        
+        # All 4 enemies dropping based on drop speed
+        if frame_count >= drop_threshold:
+            enemy1_y += 1
+            enemy2_y += 1
+            enemy3_y += 1
+            enemy4_y += 1
+            frame_count = 0
+
+            # Enemy 1
+            if enemy1_y == 4:
+                if enemy1_x == car_x:
+                    print("HIT")
+                    lives -= 1
+                    display.show(str(lives))
+                    sleep(1000)
+                    round_active = False
+                else:
+                    score += 1
+                    if drop_threshold > 6 and score % 4 == 0:
+                        drop_threshold -= 1
+            elif enemy1_y > 4:
+                enemy1_y = random.randint(-4, 0)
+                enemy1_x = random.randint(0, 4)
+
+            if round_active:
+                # Enemy 2
+                if enemy2_y == 4:
+                    if enemy2_x == car_x:
+                        print("HIT")
+                        lives -= 1
+                        display.show(str(lives))
+                        sleep(1000)
+                        round_active = False
+                    else:
+                        score += 1
+                        if drop_threshold > 6 and score % 4 == 0:
+                            drop_threshold -= 1
+                elif enemy2_y > 4:
+                    enemy2_y = random.randint(-9, -5)
+                    enemy2_x = random.randint(0, 4)
+
+            if round_active:
+                # Enemy 3
+                if enemy3_y == 4:
+                    if enemy3_x == car_x:
+                        print("HIT")
+                        lives -= 1
+                        display.show(str(lives))
+                        sleep(1000)
+                        round_active = False
+                    else:
+                        score += 1
+                        if drop_threshold > 6 and score % 4 == 0:
+                            drop_threshold -= 1
+                elif enemy3_y > 4:
+                    enemy3_y = random.randint(-14, -10)
+                    enemy3_x = random.randint(0, 4)
+
+            if round_active:
+                # Enemy 4
+                if enemy4_y == 4:
+                    if enemy4_x == car_x:
+                        print("HIT")
+                        lives -= 1
+                        display.show(str(lives))
+                        sleep(1000)
+                        round_active = False
+                    else:
+                        score += 1
+                        if drop_threshold > 6 and score % 4 == 0:
+                            drop_threshold -= 1
+                elif enemy4_y > 4:
+                    enemy4_y = random.randint(-19, -15)
+                    enemy4_x = random.randint(0, 4)
+
+        if not round_active:
+            break
+
+        # Tilt steering with dead zone (-200 to 200) and variable speed tiers
+        tilt = accelerometer.get_x()
+        
+        if tilt > 600:
+            if steering_timer % 6 == 0:
+                car_x += 1  # Fast right
+        elif tilt > 200:
+            if steering_timer % 10 == 0:
+                car_x += 1  # Slow right
+        elif tilt < -600:
+            if steering_timer % 6 == 0:
+                car_x -= 1  # Fast left
+        elif tilt < -200:
+            if steering_timer % 10 == 0:
+                car_x -= 1  # Slow left
+       
+        # Boundaries checks
+        if car_x == -1:
+            car_x = 4
+        elif car_x == 5:
+            car_x = 0
+
+        # Clear the screen
+        display.clear()
+        
+        # Display the player
+        display.set_pixel(car_x, car_y, 9)
+
+        # Display the 4 scattered enemies (only when visible on the screen)
+        if 0 <= enemy1_y <= 4:
+            display.set_pixel(enemy1_x, enemy1_y, 9)
+        if 0 <= enemy2_y <= 4:
+            display.set_pixel(enemy2_x, enemy2_y, 9)
+        if 0 <= enemy3_y <= 4:
+            display.set_pixel(enemy3_x, enemy3_y, 9)
+        if 0 <= enemy4_y <= 4:
+            display.set_pixel(enemy4_x, enemy4_y, 9)
+        
+        # Short delay
+        sleep(50)
+
+# Game Over screen when lives reach 0
+display.clear()
+display.scroll("Game over")
+display.scroll("Score: {}".format(score))
